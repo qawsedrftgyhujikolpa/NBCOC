@@ -1,0 +1,28 @@
+# NVIDIA API Proxy Configuration
+
+# NVIDIA API Settings
+nvidia:
+  api_key: "YOUR_NVIDIA_API_KEY"
+  base_url: "https://integrate.api.nvidia.com/v1"
+  default_model: "meta/llama-3.1-405b-instruct"
+  # Default context limit if not specified in 'models' section
+  default_max_context: 4096
+
+# Proxy Server Settings
+server:
+  host: "0.0.0.0"
+  port: 8000
+  # Security: If you want to require an API key for this proxy
+  # Set to null or empty string to disable
+  proxy_api_key: ""
+
+# Model specific overrides (Optional)
+models:
+  "meta/llama-3.1-405b-instruct":
+    max_context: 128000
+  "meta/llama-3.1-70b-instruct":
+    max_context: 128000
+  "meta/llama-3.1-8b-instruct":
+    max_context: 128000
+  "nvidia/llama-3.1-nemotron-70b-instruct":
+    max_context: 128000
