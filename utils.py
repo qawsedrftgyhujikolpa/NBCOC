@@ -49,3 +49,10 @@ def trim_messages(messages: List[Dict[str, str]], max_tokens: int, model_name: s
         current_tokens = count_tokens(temp_messages, model_name)
 
     return ([system_msg] if system_msg else []) + other_msgs
+
+def count_tokens_for_embedding(texts: List[str], model_name: str) -> int:
+    encoding = get_tokenizer(model_name)
+    num_tokens = 0
+    for text in texts:
+        num_tokens += len(encoding.encode(text))
+    return num_tokens

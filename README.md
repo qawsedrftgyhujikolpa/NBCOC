@@ -44,13 +44,46 @@ python3 main.py
 
 ## クライアント（OpenClaw 等）での設定例
 
+### チャット補完 (Chat Completions)
+
 OpenClaw などのクライアントで以下のように設定してください。
 
 - **API Base URL**: `http://localhost:8000/v1`
 - **API Key**: `config.yaml` の `server.proxy_api_key` が空の場合は適当な文字列（例: `sk-dummy`）で動作します。
 - **Model**: `meta/llama-3.1-405b-instruct` など、NVIDIA で利用可能なモデル名。
 
+### エンベディング (Embeddings)
+
+`/v1/embeddings` エンドポイントは、OpenAI 互換のフォーマットでエンベディングを生成します。デフォルトのモデルは `nvidia/nv-embedqa-e5-v5` です。
+
+- **API Base URL**: `http://localhost:8000/v1`
+- **API Key**: `config.yaml` の `server.proxy_api_key` が空の場合は適当な文字列（例: `sk-dummy`）で動作します。
+- **Model**: `nvidia/nv-embedqa-e5-v5` または NVIDIA が提供する他のエンベディングモデル。
+
+**Pythonでの利用例 (OpenAI Python Client)**:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://localhost:8000/v1",
+    api_key="sk-dummy" # config.yamlでproxy_api_keyを設定している場合はその値を指定
+)
+
+response = client.embeddings.create(
+    input=["これはテストテキストです。", "別のテキストです。"],
+    model="nvidia/nv-embedqa-e5-v5"
+)
+
+for embedding in response.data:
+    print(f"Index: {embedding.index}, Embedding Length: {len(embedding.embedding)}")
+```
+
+
 ## 設定ファイル (config.yaml) について
+
+- `nvidia.default_embedding_model`: エンベディングリクエストでモデルが指定されない場合に使用されるデフォルトのエンベディングモデル。
+
 
 - `nvidia.default_max_context`: モデルごとの設定がない場合に使用されるデフォルトのコンテキスト制限。
 - `models`: モデルごとの特定のコンテキスト制限（例: Llama 3.1 は 128k など）を記述します。

@@ -8,6 +8,7 @@ class NvidiaConfig:
     base_url: str = "https://integrate.api.nvidia.com/v1"
     default_model: str = "meta/llama-3.1-405b-instruct"
     default_max_context: int = 4096
+    default_embedding_model: str = "nvidia/nv-embedqa-e5-v5"
 
 @dataclass
 class ServerConfig:
@@ -35,6 +36,7 @@ def load_config(path: str = "config.yaml") -> AppConfig:
         base_url=nvidia_raw.get("base_url", "https://integrate.api.nvidia.com/v1"),
         default_model=nvidia_raw.get("default_model", "meta/llama-3.1-405b-instruct"),
         default_max_context=nvidia_raw.get("default_max_context", 4096),
+        default_embedding_model=nvidia_raw.get("default_embedding_model", "nvidia/nv-embedqa-e5-v5"),
     )
 
     server_raw = raw.get("server", {})

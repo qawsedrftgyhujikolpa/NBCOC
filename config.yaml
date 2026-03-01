@@ -2,11 +2,12 @@
 
 # NVIDIA API Settings
 nvidia:
-  api_key: "YOUR_NVIDIA_API_KEY"
+  api_key: "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"
   base_url: "https://integrate.api.nvidia.com/v1"
   default_model: "meta/llama-3.1-405b-instruct"
   # Default context limit if not specified in 'models' section
   default_max_context: 4096
+  default_embedding_model: "nvidia/nv-embedqa-e5-v5"
 
 # Proxy Server Settings
 server:

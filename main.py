@@ -7,7 +7,7 @@ from typing import List, Dict, Any, Optional
 import uvicorn
 
 from config_loader import config
-from utils import trim_messages
+from utils import trim_messages, count_tokens_for_embedding
 
 app = FastAPI(title="NVIDIA API to OpenAI Proxy")
 security = HTTPBearer()
@@ -94,6 +94,67 @@ async def stream_nvidia_response(payload: Dict[str, Any], headers: Dict[str, str
             async for line in response.aiter_lines():
                 if line:
                     yield f"{line}\n\n"
+
+@app.post("/v1/embeddings")
+async def embeddings(request: Request, token: str = Depends(verify_token)):
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    input_texts = body.get("input")
+    model = body.get("model", config.nvidia.default_embedding_model)
+
+    if not input_texts:
+        raise HTTPException(status_code=400, detail="'input' field is required")
+
+    # Ensure input_texts is a list of strings
+    if isinstance(input_texts, str):
+        input_texts = [input_texts]
+    elif not isinstance(input_texts, list) or not all(isinstance(i, str) for i in input_texts):
+        raise HTTPException(status_code=400, detail="'input' must be a string or a list of strings")
+
+    nvidia_payload = {
+        "input": input_texts,
+        "model": model
+    }
+
+    headers = {
+        "Authorization": f"Bearer {config.nvidia.api_key}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        response = await client.post("/embeddings", json=nvidia_payload, headers=headers)
+        nvidia_response = response.json()
+
+        # Transform NVIDIA response to OpenAI compatible format
+        openai_data = []
+        for i, item in enumerate(nvidia_response.get("data", [])):
+            openai_data.append({
+                "object": "embedding",
+                "embedding": item["embedding"],
+                "index": i
+            })
+        
+        # Calculate token usage
+        prompt_tokens = count_tokens_for_embedding(input_texts, model)
+
+        openai_response = {
+            "object": "list",
+            "data": openai_data,
+            "model": model,
+            "usage": {
+                "prompt_tokens": prompt_tokens,
+                "total_tokens": prompt_tokens
+            }
+        }
+        return JSONResponse(content=openai_response, status_code=response.status_code)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host=config.server.host, port=config.server.port)
