@@ -57,6 +57,20 @@ async def chat_completions(request: Request, token: str = Depends(verify_token))
     nvidia_payload = body.copy()
     nvidia_payload["messages"] = trimmed_messages
     
+    # Remove tool/function calling parameters that NVIDIA API doesn't support
+    for key in ["tools", "tool_choice", "functions", "function_call", "parallel_tool_calls"]:
+        nvidia_payload.pop(key, None)
+    
+    # Remove tool_call_id and function_call from individual messages
+    cleaned_messages = []
+    for msg in nvidia_payload["messages"]:
+        cleaned_msg = {k: v for k, v in msg.items() if k not in ["tool_calls", "tool_call_id", "function_call", "name"] or k == "name" and msg.get("role") != "tool"}
+        # Skip tool role messages entirely
+        if msg.get("role") == "tool":
+            continue
+        cleaned_messages.append(cleaned_msg)
+    nvidia_payload["messages"] = cleaned_messages
+    
     # Ensure max_tokens is present as some NVIDIA models require it
     if "max_tokens" not in nvidia_payload:
         nvidia_payload["max_tokens"] = 1024
