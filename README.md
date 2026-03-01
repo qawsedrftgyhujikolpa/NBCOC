@@ -44,6 +44,41 @@ APIキーは https://build.nvidia.com で無料取得できます。
 
 ### 3. 起動
 
+NBCOCは`model.json`ファイルまたはコマンドライン引数を使用して、OpenClawのプライマリモデルを自動的に切り替えることができます。
+
+#### モデル選択の優先順位:
+1.  **コマンドライン引数**: `start-nbcoc.sh <モデル名>` の形式で指定された場合、これが最優先されます。ショートカット名（例: `kimi`, `llama`）も利用可能です。
+2.  **`model.json`**: `~/NBCOC/model.json`が存在する場合、その中の`"model"`フィールドで指定されたモデルが使用されます。
+3.  **デフォルト**: 上記のいずれも指定されない場合、`nbcoc/moonshotai/kimi-k2.5`がデフォルトモデルとして使用されます。
+
+#### `model.json`の例:
+`~/NBCOC/model.json`に以下の内容でファイルを作成してください。
+```json
+{"model": "moonshotai/kimi-k2.5"}
+```
+
+#### 使い方:
+```bash
+./start-nbcoc.sh          # model.jsonのモデルを使用（存在しない場合はデフォルト）
+./start-nbcoc.sh kimi     # Kimi K2.5で起動
+./start-nbcoc.sh llama    # Llama 3.3 70Bで起動
+./start-nbcoc.sh nbcoc/qwen/qwen3-235b-a22b # フルモデルIDで起動
+```
+
+#### ショートカット名と対応モデル:
+| ショートカット | フルモデルID |
+|---|---|
+| `kimi` | `nbcoc/moonshotai/kimi-k2.5` |
+| `llama` | `nbcoc/meta/llama-3.3-70b-instruct` |
+| `qwen` | `nbcoc/qwen/qwen3-235b-a22b` |
+| `qwen-coder` | `nbcoc/qwen/qwen3-coder-480b-a35b-instruct` |
+| `mistral` | `nbcoc/mistralai/mistral-large-3-675b-instruct-2512` |
+| `deepseek` | `nbcoc/deepseek-ai/deepseek-r1-distill-qwen-32b` |
+| `codestral` | `nbcoc/mistralai/codestral-22b-instruct-v0.1` |
+| `nemotron` | `nbcoc/nvidia/llama-3.1-nemotron-70b-instruct` |
+| `swallow` | `nbcoc/tokyotech-llm/llama-3-swallow-70b-instruct-v0.1` |
+
+
 ```bash
 # ワンコマンド起動（プロキシ + OpenClaw再起動 + TUI自動起動）
 ./start-nbcoc.sh
